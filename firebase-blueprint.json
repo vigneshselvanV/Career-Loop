@@ -1,0 +1,216 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "Authenticated CareerLoop user account, onboarding status, and target career preference.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth user UID matching the document ID."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Learner display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200,
+          "description": "Verified account email address."
+        },
+        "targetRole": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Selected target career role."
+        },
+        "batchCohort": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "University batch, track, or learner cohort label."
+        },
+        "experienceLevel": {
+          "type": "string",
+          "enum": ["Student", "Entry Level", "Mid Level", "Career Switcher"],
+          "maxLength": 30,
+          "description": "Self-reported career experience level."
+        },
+        "learningGoal": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Short career goal or recent project summary from onboarding."
+        },
+        "onboardingCompleted": {
+          "type": "boolean",
+          "description": "Whether the first-time 3-step AI onboarding flow has been completed."
+        },
+        "isDemoMode": {
+          "type": "boolean",
+          "description": "Whether the user is currently viewing the Sophia Vance demo persona."
+        },
+        "readinessScore": {
+          "type": "number",
+          "description": "Current weighted role readiness percentage (0 to 100)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account was last updated."
+        }
+      },
+      "required": ["uid", "displayName", "targetRole", "onboardingCompleted", "createdAt", "updatedAt"]
+    },
+    "UserWorkspace": {
+      "title": "UserWorkspace",
+      "description": "Persisted CareerLoop verified skills, gaps, interactive DAG roadmap, and recent agent collaboration logs.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "targetRole": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80,
+          "description": "Target role for this workspace snapshot."
+        },
+        "readinessScore": {
+          "type": "number",
+          "description": "Weighted role readiness score (0 to 100)."
+        },
+        "quizScorePercent": {
+          "type": "number",
+          "description": "Latest diagnostic verification score (0 to 100)."
+        },
+        "roleSummary": {
+          "type": "string",
+          "maxLength": 600,
+          "description": "Personalized market readiness summary."
+        },
+        "rerouted": {
+          "type": "boolean",
+          "description": "Whether adaptive remediation re-routing is active on the DAG."
+        },
+        "rerouteReason": {
+          "type": "string",
+          "maxLength": 300,
+          "description": "Explanation for adaptive remediation insertion."
+        },
+        "verifiedSkills": {
+          "type": "array",
+          "description": "List of verified baseline and mastered skills."
+        },
+        "skillGaps": {
+          "type": "array",
+          "description": "List of prioritized skill gaps for the target role."
+        },
+        "roadmapNodes": {
+          "type": "array",
+          "description": "React Flow DAG nodes for the adaptive learning roadmap."
+        },
+        "roadmapEdges": {
+          "type": "array",
+          "description": "React Flow DAG edges connecting prerequisites and modules."
+        },
+        "agentLogs": {
+          "type": "array",
+          "description": "Bounded recent agent collaboration updates."
+        },
+        "claimedSkills": {
+          "type": "array",
+          "description": "Skills claimed during conversational onboarding or PDF parsing."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "uid",
+        "targetRole",
+        "readinessScore",
+        "verifiedSkills",
+        "skillGaps",
+        "roadmapNodes",
+        "roadmapEdges",
+        "agentLogs",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AssessmentRecord": {
+      "title": "AssessmentRecord",
+      "description": "Individual topic quiz or baseline diagnostic attempt stored per user.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Owner Firebase Auth UID."
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "Assessed skill or topic name."
+        },
+        "scorePercent": {
+          "type": "number",
+          "description": "Score percentage from 0 to 100."
+        },
+        "passed": {
+          "type": "boolean",
+          "description": "True when scorePercent >= 60."
+        },
+        "triggeredReroute": {
+          "type": "boolean",
+          "description": "True when failure triggered DAG remediation."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of assessment completion."
+        }
+      },
+      "required": ["uid", "topic", "scorePercent", "passed", "triggeredReroute", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserAccount" },
+      "description": "Private user account metadata, onboarding status, and role preferences."
+    },
+    "/users/{userId}/workspaces/{workspaceId}": {
+      "schema": { "$ref": "#/entities/UserWorkspace" },
+      "description": "User-owned career identity, verified skills, skill gaps, and adaptive DAG roadmap."
+    },
+    "/users/{userId}/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/AssessmentRecord" },
+      "description": "User-owned assessment attempts and adaptive re-route audit records."
+    }
+  }
+}

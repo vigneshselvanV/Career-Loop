@@ -1,0 +1,78 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    color: #1D1D1F;
+    background-color: #F5F5F7;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.careerloop-canvas-bg {
+  background-color: #F5F5F7;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(253, 252, 251, 0.95) 0%, rgba(253, 252, 251, 0) 48%),
+    radial-gradient(circle at 88% 92%, rgba(234, 239, 247, 0.95) 0%, rgba(234, 239, 247, 0) 52%);
+}
+
+.glass-surface {
+  background: rgba(255, 255, 255, 0.76);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+}
+
+.glass-subtle {
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+/* React Flow Apple Daylight polish */
+.react-flow__controls {
+  border-radius: 14px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.08) !important;
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(16px);
+}
+
+.react-flow__controls-button {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06) !important;
+  color: #1D1D1F !important;
+  background: transparent !important;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(0, 113, 227, 0.08) !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-resume-sheet,
+  #print-resume-sheet * {
+    visibility: visible;
+  }
+  #print-resume-sheet {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    border: none !important;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+  }
+}

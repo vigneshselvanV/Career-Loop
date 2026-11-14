@@ -1,0 +1,264 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidUserAccount(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'targetRole', 'onboardingCompleted', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly([
+          'uid',
+          'displayName',
+          'email',
+          'targetRole',
+          'batchCohort',
+          'experienceLevel',
+          'learningGoal',
+          'onboardingCompleted',
+          'isDemoMode',
+          'readinessScore',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && data.uid.size() > 0
+        && data.uid.size() <= 128
+        && data.displayName is string
+        && data.displayName.size() >= 1
+        && data.displayName.size() <= 100
+        && (!('email' in data) || (data.email is string && data.email.size() <= 200))
+        && data.targetRole is string
+        && data.targetRole.size() >= 2
+        && data.targetRole.size() <= 80
+        && (!('batchCohort' in data) || (data.batchCohort is string && data.batchCohort.size() >= 1 && data.batchCohort.size() <= 60))
+        && (!('experienceLevel' in data) || (data.experienceLevel is string && data.experienceLevel in ['Student', 'Entry Level', 'Mid Level', 'Career Switcher']))
+        && (!('learningGoal' in data) || (data.learningGoal is string && data.learningGoal.size() <= 300))
+        && data.onboardingCompleted is bool
+        && (!('isDemoMode' in data) || data.isDemoMode is bool)
+        && (!('readinessScore' in data) || (data.readinessScore is number && data.readinessScore >= 0 && data.readinessScore <= 100))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidUserWorkspace(data) {
+      return data.keys().hasAll([
+          'uid',
+          'targetRole',
+          'readinessScore',
+          'verifiedSkills',
+          'skillGaps',
+          'roadmapNodes',
+          'roadmapEdges',
+          'agentLogs',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'uid',
+          'targetRole',
+          'readinessScore',
+          'quizScorePercent',
+          'roleSummary',
+          'rerouted',
+          'rerouteReason',
+          'verifiedSkills',
+          'skillGaps',
+          'roadmapNodes',
+          'roadmapEdges',
+          'agentLogs',
+          'claimedSkills',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && data.uid.size() > 0
+        && data.uid.size() <= 128
+        && data.targetRole is string
+        && data.targetRole.size() >= 2
+        && data.targetRole.size() <= 80
+        && data.readinessScore is number
+        && data.readinessScore >= 0
+        && data.readinessScore <= 100
+        && (!('quizScorePercent' in data) || (data.quizScorePercent is number && data.quizScorePercent >= 0 && data.quizScorePercent <= 100))
+        && (!('roleSummary' in data) || (data.roleSummary is string && data.roleSummary.size() <= 600))
+        && (!('rerouted' in data) || data.rerouted is bool)
+        && (!('rerouteReason' in data) || (data.rerouteReason is string && data.rerouteReason.size() <= 300))
+        && data.verifiedSkills is list
+        && data.verifiedSkills.size() <= 30
+        && (data.verifiedSkills.size() == 0 || (data.verifiedSkills[0] is map && data.verifiedSkills[0].skill_name is string && data.verifiedSkills[0].skill_name.size() <= 100))
+        && data.skillGaps is list
+        && data.skillGaps.size() <= 30
+        && (data.skillGaps.size() == 0 || (data.skillGaps[0] is map && data.skillGaps[0].skill_name is string && data.skillGaps[0].skill_name.size() <= 100))
+        && data.roadmapNodes is list
+        && data.roadmapNodes.size() <= 30
+        && (data.roadmapNodes.size() == 0 || (data.roadmapNodes[0] is map && data.roadmapNodes[0].id is string && data.roadmapNodes[0].id.size() <= 128))
+        && data.roadmapEdges is list
+        && data.roadmapEdges.size() <= 50
+        && (data.roadmapEdges.size() == 0 || (data.roadmapEdges[0] is map && data.roadmapEdges[0].id is string && data.roadmapEdges[0].id.size() <= 200))
+        && data.agentLogs is list
+        && data.agentLogs.size() <= 40
+        && (data.agentLogs.size() == 0 || (data.agentLogs[0] is map && data.agentLogs[0].agent_name is string && data.agentLogs[0].agent_name.size() <= 80))
+        && (!('claimedSkills' in data) || (
+          data.claimedSkills is list
+          && data.claimedSkills.size() <= 30
+          && (data.claimedSkills.size() == 0 || (data.claimedSkills[0] is map && data.claimedSkills[0].skill_name is string && data.claimedSkills[0].skill_name.size() <= 100))
+        ))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAssessmentRecord(data) {
+      return data.keys().hasAll(['uid', 'topic', 'scorePercent', 'passed', 'triggeredReroute', 'createdAt'])
+        && data.keys().hasOnly(['uid', 'topic', 'scorePercent', 'passed', 'triggeredReroute', 'createdAt'])
+        && data.uid is string
+        && data.uid == request.auth.uid
+        && data.uid.size() > 0
+        && data.uid.size() <= 128
+        && data.topic is string
+        && data.topic.size() >= 1
+        && data.topic.size() <= 120
+        && data.scorePercent is number
+        && data.scorePercent >= 0
+        && data.scorePercent <= 100
+        && data.passed is bool
+        && data.triggeredReroute is bool
+        && data.createdAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && (resource == null || existing().uid == request.auth.uid);
+
+      allow list: if false;
+
+      allow create: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserAccount(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserAccount(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'displayName',
+            'targetRole',
+            'batchCohort',
+            'experienceLevel',
+            'learningGoal',
+            'onboardingCompleted',
+            'isDemoMode',
+            'readinessScore',
+            'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['targetRole', 'readinessScore', 'updatedAt'])
+        );
+
+      allow delete: if false;
+
+      match /workspaces/{workspaceId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(workspaceId)
+          && request.auth.uid == userId
+          && (resource == null || existing().uid == request.auth.uid);
+
+        allow list: if isSignedIn()
+          && request.auth.uid == userId
+          && resource.data.uid == request.auth.uid;
+
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(workspaceId)
+          && request.auth.uid == userId
+          && isValidUserWorkspace(incoming())
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(workspaceId)
+          && request.auth.uid == userId
+          && isValidUserWorkspace(incoming())
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid
+          && incoming().uid == existing().uid
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && incoming().diff(existing()).affectedKeys().hasOnly([
+            'targetRole',
+            'readinessScore',
+            'quizScorePercent',
+            'roleSummary',
+            'rerouted',
+            'rerouteReason',
+            'verifiedSkills',
+            'skillGaps',
+            'roadmapNodes',
+            'roadmapEdges',
+            'agentLogs',
+            'claimedSkills',
+            'updatedAt'
+          ]);
+
+        allow delete: if false;
+      }
+
+      match /assessments/{assessmentId} {
+        allow get: if isSignedIn()
+          && isValidId(userId)
+          && isValidId(assessmentId)
+          && request.auth.uid == userId
+          && (resource == null || existing().uid == request.auth.uid);
+
+        allow list: if isSignedIn()
+          && request.auth.uid == userId
+          && resource.data.uid == request.auth.uid;
+
+        allow create: if isVerifiedUser()
+          && isValidId(userId)
+          && isValidId(assessmentId)
+          && request.auth.uid == userId
+          && isValidAssessmentRecord(incoming())
+          && incoming().createdAt == request.time
+          && exists(/databases/$(database)/documents/users/$(userId))
+          && get(/databases/$(database)/documents/users/$(userId)).data.uid == request.auth.uid;
+
+        allow update, delete: if false;
+      }
+    }
+  }
+}

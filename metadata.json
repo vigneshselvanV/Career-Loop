@@ -1,0 +1,6 @@
+{
+  "name": "CareerLoop",
+  "description": "Agentic AI-Powered Career Identity, Skill Verification, and Adaptive Learning Platform.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
